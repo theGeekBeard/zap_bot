@@ -10,7 +10,6 @@ from loader import dp, db, bot
 
 @dp.callback_query_handler(text=["show_parts", "BACK", "PREV"], state="*")
 async def show_sale(call: CallbackQuery):
-    print(call.data)
     await states.states.SearchSale.number.set()
 
     message_id = await db.get_message_id(call.message.chat.id)
@@ -18,13 +17,11 @@ async def show_sale(call: CallbackQuery):
     if message_id:
         try:
             if call.data == "show_parts":
-                print(34324)
                 await bot.delete_message(call.message.chat.id, message_id)
                 await bot.delete_message(call.message.chat.id, message_id + 1)
                 await db.del_message_id(call.message.chat.id)
         except:
             if call.data == "show_parts":
-                print(232243)
                 await bot.delete_message(call.message.chat.id, message_id - 1)
                 await db.del_message_id(call.message.chat.id)
     else:
@@ -38,8 +35,8 @@ async def show_sale(call: CallbackQuery):
     sales = await db.get_sales(call.message.chat.id)
 
     if sales:
-        sales[0].sort()
-        for i in chunks(10, sales[0]):
+        sales.sort()
+        for i in chunks(10, sales):
             markup = InlineKeyboardMarkup()
             for j in i:
                 try:
@@ -48,7 +45,7 @@ async def show_sale(call: CallbackQuery):
                 except AttributeError:
                     continue
             else:
-                if len(sales[0]) > 10:
+                if len(sales) > 10:
                     markup.add(InlineKeyboardButton("<<<", callback_data="BACK"),
                                InlineKeyboardButton(">>>", callback_data="PREV"))
                 markup.row(InlineKeyboardButton("🔙Назад в главное меню", callback_data="main_menu"))
@@ -77,8 +74,8 @@ async def show_sale(call: CallbackQuery):
         index = 0
         markup = salesKeyboards[index]
 
-    await call.message.edit_text(f"<b>Найдено номеров</b>: {len(sales[0])}\n"
-                                 f"<b>Страница:</b> {index + 1 if index >= 0 else len(list(chunks(10, sales[0]))) + index + 1}",
+    await call.message.edit_text(f"<b>Найдено номеров</b>: {len(sales)}\n"
+                                 f"<b>Страница:</b> {index + 1 if index >= 0 else len(list(chunks(10, sales))) + index + 1}",
                                  reply_markup=markup, parse_mode="HTML")
     await db.add_index(call.message.chat.id, index)
 

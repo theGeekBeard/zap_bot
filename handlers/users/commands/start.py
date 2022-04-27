@@ -5,7 +5,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from loader import dp, db
 
 
-@dp.message_handler(CommandStart())
+@dp.message_handler(CommandStart(), state="*")
 async def bot_start(message: types.Message):
     menuMarkup = InlineKeyboardMarkup(
         inline_keyboard=[

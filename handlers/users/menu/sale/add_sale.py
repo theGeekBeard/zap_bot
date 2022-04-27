@@ -1,3 +1,4 @@
+import json
 from collections import Counter
 
 from aiogram import types
@@ -6,6 +7,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQu
 
 import states.states
 from loader import dp, db, bot
+from utils.convert_to_json import convert_to_json
 
 
 @dp.callback_query_handler(text="add_part")
@@ -21,7 +23,6 @@ async def add_sale(call: CallbackQuery):
 
         await db.del_message_id(call.message.chat.id)
     else:
-        print(2)
         pass
 
     markup = InlineKeyboardMarkup(
@@ -66,7 +67,7 @@ async def set_number(message: types.Message, state: FSMContext):
     count_new_numbers = 0
 
     if old_numbers:
-        res = new_numbers + old_numbers[0]
+        res = new_numbers + old_numbers
 
         for key, value in Counter(res).items():
             if value > 1:
@@ -75,7 +76,9 @@ async def set_number(message: types.Message, state: FSMContext):
                 if key in new_numbers:
                     count_new_numbers += 1
 
-        await db.update_sales(message.chat.id, list(set(res)))
+        res_json = await convert_to_json(list(set(res)))
+
+        await db.update_sales(message.chat.id, res_json)
     else:
         res = new_numbers
 
@@ -86,7 +89,9 @@ async def set_number(message: types.Message, state: FSMContext):
                 if key in new_numbers:
                     count_new_numbers += 1
 
-        await db.add_new_sale(message.chat.id, res)
+        res_json = await convert_to_json(list(set(res)))
+
+        await db.add_new_sale(message.chat.id, res_json)
 
     markup = InlineKeyboardMarkup(
         inline_keyboard=[
